@@ -1,0 +1,71 @@
+dataset: datasource/database/schema/inventory_levels
+
+variables:
+  FRESHNESS_HOURS:
+    default: 24
+
+checks:
+  - schema: {}
+  - row_count:
+      threshold:
+        must_be_greater_than: 0
+  - freshness:
+      column: last_updated_at
+      threshold:
+        unit: hour
+        must_be_less_than_or_equal: ${var.FRESHNESS_HOURS}
+  - failed_rows:
+      name: "Stock values must never be negative"
+      qualifier: non_negative_stocks
+      expression: >
+        stock_on_hand < 0
+        OR stock_reserved < 0
+        OR stock_available < 0
+  - failed_rows:
+      name: "Reserved stock cannot exceed stock on hand"
+      qualifier: reserved_le_on_hand
+      expression: stock_reserved > stock_on_hand
+  - failed_rows:
+      name: "Available stock must equal on_hand minus reserved"
+      qualifier: available_equals_on_hand_minus_reserved
+      expression: stock_available <> (stock_on_hand - stock_reserved)
+  - failed_rows:
+      name: "last_updated_at must not be in the future"
+      qualifier: last_updated_not_future
+      expression: last_updated_at > ${soda.NOW}
+columns:
+  - name: product_id
+    data_type: string
+    checks:
+      - missing:
+          name: No missing values
+  - name: location_id
+    data_type: string
+    checks:
+      - missing:
+          name: No missing values
+  - name: stock_on_hand
+    data_type: integer
+    checks:
+      - missing:
+      - invalid:
+          name: "Stock on hand must be zero or positive"
+          valid_min: 0
+  - name: stock_reserved
+    data_type: integer
+    checks:
+      - missing:
+      - invalid:
+          name: "Reserved stock must be zero or positive"
+          valid_min: 0
+  - name: stock_available
+    data_type: integer
+    checks:
+      - missing:
+      - invalid:
+          name: "Available stock must be zero or positive"
+          valid_min: 0
+  - name: last_updated_at
+    data_type: dateTime
+    checks:
+      - missing:

@@ -1,0 +1,87 @@
+dataset: datasource/database/schema/retail_orders
+checks:
+  - schema: {}
+  - freshness:
+      column: created_at
+      threshold:
+        unit: hour
+        must_be_less_than_or_equal: 24
+columns:
+  - name: order_id
+    data_type: string
+    checks:
+      - missing:
+          name: No missing value
+  - name: product_id
+    data_type: string
+    checks:
+      - missing:
+          name: No missing values
+  - name: customer_id
+    data_type: string
+    checks:
+      - missing:
+          name: No missing values
+  - name: order_quantity
+    data_type: integer
+    checks:
+      - missing:
+      - invalid:
+          name: Positive quantity
+          valid_min: 1
+  - name: discount
+    data_type: float
+    checks:
+      - invalid:
+          name: Positive quantity
+          valid_min: 1
+  - name: discount_currency
+    data_type: string
+    checks:
+      - invalid:
+          name: Allowed currency is USD
+          valid_values:
+            - usd
+  - name: billing_address
+    data_type: string
+    checks:
+      - missing:
+  - name: shipping_address
+    data_type: string
+    checks:
+      - missing:
+  - name: payment_method
+    data_type: string
+    checks:
+      - missing:
+      - invalid:
+          name: Allowed payment methods
+          valid_values:
+            - cash
+            - credit_card
+            - transfer
+  - name: order_date
+    data_type: dateTime
+    checks:
+      - missing:
+  - name: ship_date
+    data_type: dateTime
+    checks:
+      - missing:
+  - name: country_code
+    data_type: string
+    checks:
+      - missing:
+      - invalid:
+          name: Two-letter country code
+          valid_format:
+            regex: ^[A-Za-z]{2}$
+            name: Exactly two letters
+  - name: total_order_value
+    data_type: float
+    checks:
+      - missing:
+  - name: created_at
+    data_type: dateTime
+    checks:
+      - missing:

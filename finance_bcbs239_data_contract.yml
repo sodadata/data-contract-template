@@ -1,0 +1,58 @@
+dataset: datasource/db/schema/exposures
+
+checks:
+  - failed_rows:
+      name: counterparties_missing_in_exposures
+      query: |
+        (SELECT m.counterparty_id
+        FROM datasource.db.schema.counterparty_master m
+        LEFT JOIN datasource.db.schema.exposures e
+          ON e.counterparty_id = m.counterparty_id) IS NULL
+      threshold:
+        must_be: 0
+      attributes:
+        bcbs239:
+          - P4
+        description: "Completeness: any counterparties missing from exposures?"
+
+columns:
+  - name: lei_code
+    data_type: string
+    checks:
+      - invalid:
+          name: lei_code_format
+          valid_format:
+            name: LEI must be 20 alphanumeric
+            regex: '^[A-Z0-9]{20}$'
+          attributes:
+            bcbs239:
+              - P3
+            description: LEI format is 20 uppercase alphanumerics
+
+  - name: counterparty_id
+    checks:
+      - invalid:
+          name: counterparty_id_in_master
+          valid_reference_data:
+            dataset: datasource/db/schema/counterparty_master
+            column: counterparty_id
+          attributes:
+            bcbs239:
+              - P3
+            description: "Integrity: all counterparties in exposures exist in the master"
+
+reconciliation:
+  source:
+    dataset: datasource/db/schema/accounting_balances
+  checks:
+    - metric_diff:
+        name: total_exposures_vs_total_balance
+        source_expression: SUM(balance_amount)
+        target_expression: SUM(exposure_amount)
+        threshold:
+          must_be_less_than: 1000
+        attributes:
+          bcbs239:
+            - P3
+            - P7
+          description: "Reconciliation vs accounting: Overall tolerance across the books (sum vs sum)"

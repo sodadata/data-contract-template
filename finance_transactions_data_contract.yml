@@ -1,0 +1,106 @@
+dataset: datasource/database/schema/finance_transactions
+
+checks:
+  - schema:
+      allow_extra_columns: false
+      allow_other_column_order: false
+  - row_count:
+      threshold:
+        must_be_greater_than: 0
+  - freshness:
+      column: transaction_timestamp
+      threshold:
+        unit: hour
+        must_be_less_than_or_equal: 24
+  - failed_rows:
+      name: "Transaction timestamp must not be in the future"
+      qualifier: ts_not_future
+      expression: transaction_timestamp > ${soda.NOW}
+  - failed_rows:
+      name: "Amount sign must match transaction_type (DEBIT negative, CREDIT positive)"
+      qualifier: amount_sign_by_type
+      expression: >
+        (transaction_type = 'DEBIT' AND amount >= 0)
+        OR (transaction_type = 'CREDIT' AND amount <= 0)
+
+columns:
+  - name: transaction_id
+    data_type: varchar
+    checks:
+      - missing:
+      - duplicate:
+      - invalid:
+          name: "transaction_id must be a UUID"
+          valid_format:
+            name: UUID
+            regex: "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$"
+  - name: account_id
+    data_type: varchar
+    checks:
+      - missing:
+      - invalid:
+          name: "account_id must be non-empty and sane length"
+          valid_min_length: 1
+          valid_max_length: 64
+  - name: customer_id
+    data_type: varchar
+    checks:
+      - missing:
+      - invalid:
+          name: "customer_id must be non-empty and sane length"
+          valid_min_length: 1
+          valid_max_length: 64
+  - name: transaction_timestamp
+    data_type: timestamp
+    checks:
+      - missing:
+  - name: amount
+    data_type: decimal
+    checks:
+      - missing:
+      - invalid:
+          name: "Amount must not be zero (allow tiny tolerance in case of rare edge cases)"
+          invalid_values: [0]
+          threshold:
+            metric: percent
+            must_be_less_than: 0.1
+  - name: currency
+    data_type: varchar
+    checks:
+      - missing:
+      - invalid:
+          name: "Currency must be ISO-4217-like (3 uppercase letters)"
+          valid_format:
+            name: ISO-4217 code
+            regex: "^[A-Z]{3}$"
+  - name: transaction_type
+    data_type: varchar
+    checks:
+      - missing:
+      - invalid:
+          name: "Allowed transaction types"
+          valid_values:
+            - DEBIT
+            - CREDIT
+            - TRANSFER
+            - FEE
+            - REVERSAL
+            - ADJUSTMENT
+  - name: status
+    data_type: varchar
+    checks:
+      - missing:
+      - invalid:
+          name: "Allowed statuses"
+          valid_values:
+            - PENDING
+            - POSTED
+            - REVERSED
+            - FAILED
+            - CANCELLED
+  - name: reference_id
+    data_type: varchar
+    checks:
+      - invalid:
+          name: "reference_id length guardrail"
+          valid_max_length: 128

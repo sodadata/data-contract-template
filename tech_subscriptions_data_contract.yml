@@ -1,0 +1,69 @@
+dataset: datasource/database/schema/tech_subscriptions
+
+variables:
+  FRESHNESS_HOURS:
+    default: 24
+
+checks:
+  - schema:
+      allow_extra_columns: false
+      allow_other_column_order: false
+  - row_count:
+      threshold:
+        must_be_greater_than: 0
+  - freshness:
+      column: start_date
+      threshold:
+        unit: hour
+        must_be_less_than_or_equal: ${var.FRESHNESS_HOURS}
+  - failed_rows:
+      name: "Subscription start_date must not be after end_date"
+      expression: end_date IS NOT NULL AND start_date > end_date
+  - failed_rows:
+      name: "Cancelled or expired subscriptions must have an end_date"
+      expression: (billing_status IN ('CANCELLED', 'EXPIRED') AND end_date IS NULL)
+  - failed_rows:
+      name: "Active subscriptions should not have an end_date in the past"
+      expression: (billing_status = 'ACTIVE' AND end_date IS NOT NULL AND end_date < ${soda.NOW})
+
+columns:
+  - name: subscription_id
+    data_type: varchar
+    checks:
+      - missing:
+      - duplicate:
+  - name: customer_id
+    data_type: varchar
+    checks:
+      - missing:
+  - name: plan_id
+    data_type: varchar
+    checks:
+      - missing:
+  - name: start_date
+    data_type: date
+    checks:
+      - missing:
+  - name: end_date
+    data_type: date
+  - name: billing_status
+    data_type: varchar
+    checks:
+      - missing:
+      - invalid:
+          name: "Allowed billing statuses"
+          valid_values:
+            - TRIALING
+            - ACTIVE
+            - PAST_DUE
+            - CANCELLED
+            - EXPIRED
+  - name: currency
+    data_type: varchar
+    checks:
+      - missing:
+      - invalid:
+          name: "Currency must be ISO-4217-like (3 uppercase letters)"
+          valid_format:
+            name: ISO-4217 code
+            regex: "^[A-Z]{3}$"

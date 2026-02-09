@@ -1,0 +1,41 @@
+dataset: datasource/database/schema/general_table
+
+checks:
+  - schema:
+      allow_extra_columns: false
+      allow_other_column_order: false
+  - row_count:
+      threshold:
+        must_be_greater_than: 0
+
+columns:
+  - name: id
+    data_type: varchar
+    checks:
+      - missing:
+      - duplicate:
+  - name: date
+    data_type: timestamp
+    checks:
+      - missing:
+  - name: column_1
+    data_type: varchar
+    checks:
+      - missing:
+      - invalid:
+          valid_min_length: 1
+          valid_max_length: 255
+  - name: column_2
+    data_type: varchar
+    checks:
+      - invalid:
+          valid_values: ["C", "A", "D"]
+  - name: column_3
+    data_type: integer
+    checks:
+      - aggregate:
+          function: avg
+          threshold:
+            must_be_between:
+              greater_than: 20
+              less_than: 50
