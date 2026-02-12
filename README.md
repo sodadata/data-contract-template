@@ -4,7 +4,9 @@ A collection of ready-to-use data contract templates across industries and use c
 
 Browse all templates with a searchable UI at [soda.io/templates](https://soda.io/templates?utm_source=github&utm_medium=organic&utm_campaign=data_contracts&utm_content=templates).
 
-<img width="455" height="260" alt="CleanShot 2026-02-12 at 18 13 00@2x" src="https://github.com/user-attachments/assets/1b2ee06f-7bbf-4d5d-ab0f-ef2834799cc7" />
+<p align="center">
+  <img width="455" height="260" alt="CleanShot 2026-02-12 at 18 13 00@2x" src="https://github.com/user-attachments/assets/1b2ee06f-7bbf-4d5d-ab0f-ef2834799cc7" />
+</p>
 
 ## What is a data contract?
 
