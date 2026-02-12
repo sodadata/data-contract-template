@@ -2,7 +2,7 @@
 
 A collection of ready-to-use data contract templates across industries and use cases. Clone a template, adapt it to your dataset, and run it against your data.
 
-Browse all templates with a searchable UI at [soda.io/templates]([https://soda.io/templates](https://soda.io/templates?utm_source=github&utm_medium=organic&utm_campaign=data_contracts&utm_content=templates)).
+Browse all templates with a searchable UI at [soda.io/templates](https://soda.io/templates?utm_source=github&utm_medium=organic&utm_campaign=data_contracts&utm_content=templates).
 
 ## What is a data contract?
 
